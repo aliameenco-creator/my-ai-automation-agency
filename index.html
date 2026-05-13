@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Compound — AI automation that gives you your weeks back</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --bg: #0A0A0B;
+    --surface: #131316;
+    --surface-2: #1B1B1F;
+    --surface-3: #232328;
+    --border: #26262B;
+    --border-strong: #3A3A42;
+    --text: #F5F5F5;
+    --text-muted: #9C9CA6;
+    --text-dim: #5C5C66;
+    --accent: #CDFF3F;
+    --accent-ink: #0A0A0B;
+    --accent-glow: rgba(205, 255, 63, 0.18);
+    --warm: #FFB547;
+    --danger: #FF5C4A;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Geist', system-ui, sans-serif;
+    font-weight: 400;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  body { overflow-x: hidden; }
+
+  ::selection { background: var(--accent); color: var(--accent-ink); }
+
+  .mono { font-family: 'JetBrains Mono', monospace; }
+  .serif-italic { font-family: 'Instrument Serif', serif; font-style: italic; font-weight: 400; }
+
+  /* ─── Marquee ─── */
+  .marquee-wrap {
+    width: 100%;
+    overflow: hidden;
+    position: relative;
+    --mq-fade: 120px;
+  }
+  .marquee-wrap.fade::before,
+  .marquee-wrap.fade::after {
+    content: "";
+    position: absolute;
+    top: 0; bottom: 0;
+    width: var(--mq-fade);
+    z-index: 2;
+    pointer-events: none;
+  }
+  .marquee-wrap.fade::before {
+    left: 0;
+    background: linear-gradient(to right, var(--bg), transparent);
+  }
+  .marquee-wrap.fade::after {
+    right: 0;
+    background: linear-gradient(to left, var(--bg), transparent);
+  }
+  .marquee-track {
+    display: flex;
+    width: max-content;
+    animation: marquee-scroll 40s linear infinite;
+    will-change: transform;
+  }
+  .marquee-track.reverse { animation-direction: reverse; }
+  .marquee-group {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+  }
+  @keyframes marquee-scroll {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-50%); }
+  }
+
+  /* ─── Buttons ─── */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 13px 20px;
+    border-radius: 999px;
+    font-family: 'Geist', sans-serif;
+    font-size: 14.5px;
+    font-weight: 500;
+    letter-spacing: -0.005em;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: transform 0.12s ease, background 0.18s ease, border-color 0.18s ease, color 0.18s ease;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  .btn-primary {
+    background: var(--accent);
+    color: var(--accent-ink);
+    box-shadow: 0 0 0 1px var(--accent), 0 12px 32px -8px var(--accent-glow);
+  }
+  .btn-primary:hover { transform: translateY(-1px); filter: brightness(1.05); }
+  .btn-ghost {
+    background: transparent;
+    color: var(--text);
+    border-color: var(--border-strong);
+  }
+  .btn-ghost:hover { background: var(--surface-2); border-color: #4A4A52; }
+  .btn-dark {
+    background: var(--surface-2);
+    color: var(--text);
+    border-color: var(--border);
+  }
+  .btn-dark:hover { background: var(--surface-3); }
+
+  /* ─── Inputs ─── */
+  .field {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 14px 18px;
+    border-radius: 999px;
+    font-family: inherit;
+    font-size: 15px;
+    outline: none;
+    width: 100%;
+    transition: border-color 0.15s ease;
+  }
+  .field:focus { border-color: var(--accent); }
+  .field::placeholder { color: var(--text-dim); }
+
+  /* ─── Common layout ─── */
+  .container {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 32px;
+  }
+  @media (max-width: 720px) {
+    .container { padding: 0 20px; }
+  }
+
+  .section-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11.5px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+  .section-label .dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 12px var(--accent);
+  }
+
+  /* utility: SVG grid backdrop */
+  .grid-backdrop {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(to right, rgba(255,255,255,0.025) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(255,255,255,0.025) 1px, transparent 1px);
+    background-size: 64px 64px;
+    mask-image: radial-gradient(ellipse 80% 60% at 50% 30%, black 30%, transparent 80%);
+    -webkit-mask-image: radial-gradient(ellipse 80% 60% at 50% 30%, black 30%, transparent 80%);
+    pointer-events: none;
+  }
+
+  /* hover lift */
+  .lift { transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease; }
+  .lift:hover { transform: translateY(-2px); border-color: var(--border-strong); }
+
+  /* tag pill */
+  .tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 11px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    color: var(--text-muted);
+    text-transform: uppercase;
+  }
+  .tag.accent { color: var(--accent); border-color: rgba(205, 255, 63, 0.3); background: rgba(205, 255, 63, 0.06); }
+
+  /* ─── Entrance animations ─── */
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes rise-left {
+    from { opacity: 0; transform: translateX(-20px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+  @keyframes fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  @keyframes scale-in {
+    from { opacity: 0; transform: scale(0.94); }
+    to { opacity: 1; transform: scale(1); }
+  }
+  .rise { animation: rise 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+
+  /* ─── Button micro-animations ─── */
+  .btn { position: relative; overflow: hidden; }
+  .btn::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(255,255,255,0);
+    transition: background 0.2s ease;
+    border-radius: inherit;
+  }
+  .btn:active::after { background: rgba(255,255,255,0.08); }
+  .btn:active { transform: scale(0.97) !important; }
+
+  /* ─── Mobile nav overrides ─── */
+  @media (max-width: 480px) {
+    .container { padding: 0 16px; }
+    .section-label { font-size: 10.5px; }
+  }
+
+  /* ─── Smooth scroll ─── */
+  html { scroll-behavior: smooth; }
+
+  /* ─── Touch-friendly tap highlights ─── */
+  a, button { -webkit-tap-highlight-color: transparent; }
+
+  /* ─── Reduced motion ─── */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+
+  /* scrollbar */
+  ::-webkit-scrollbar { width: 12px; height: 12px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--surface-2); border-radius: 999px; border: 3px solid var(--bg); }
+  ::-webkit-scrollbar-thumb:hover { background: var(--surface-3); }
+</style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+  <script type="text/babel" src="logos.jsx"></script>
+  <script type="text/babel" src="tweaks-panel.jsx"></script>
+  <script type="text/babel" src="app-part1.jsx"></script>
+  <script type="text/babel" src="app-main.jsx"></script>
+</body>
+</html>
